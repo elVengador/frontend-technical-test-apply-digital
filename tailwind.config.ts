@@ -14,6 +14,7 @@ const config: Config = {
       },
       colors: {
         "ad-gray-medium": "#3B3B3B",
+        "ad-cta-fill-primary": "#585660"
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
