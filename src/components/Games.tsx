@@ -1,7 +1,7 @@
 "use client";
 
 import { GetGamesOutput } from "@/app/types";
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { Game } from "@/utils/endpoint";
 import { capitalizeFirstLetter } from "@/utils/string.utils";
@@ -9,13 +9,17 @@ import { PipeIcon } from "./icons/PipeIcon";
 import { Select } from "./Select";
 import { getGames } from "@/repository/games.repository";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { Button } from "./Button";
 
 type GamesProps = { data: GetGamesOutput };
 export const Games = ({ data }: GamesProps) => {
   const [selectedFilter, setSelectedFilter] = useState("");
   const [filteredGames, setFilteredGames] = useState<Game[]>(data.games);
-  const [loading, setLoading] = useState(false);
+  const [loadingFilter, setLoadingFilter] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [_, setCart] = useLocalStorage({ key: "AD_CART", initialValue: "" });
+  const [currentPage, setCurrentPage] = useState(data.currentPage);
+  const allGames = useRef<Game[]>(data.games);
 
   const onAddToCart = (game: Game) => {
     try {
@@ -33,23 +37,35 @@ export const Games = ({ data }: GamesProps) => {
     }
   };
 
-  useEffect(() => {
-    const onSyncFilteredGames = async () => {
-      try {
-        console.log("selectedFilter", selectedFilter);
-        if (!selectedFilter) return setFilteredGames(data.games);
+  const onSeeMore = async () => {
+    try {
+      setLoadingMore(true);
 
-        setLoading(true);
-        const newFilteredGames = await getGames(selectedFilter);
-        setFilteredGames(newFilteredGames.games);
-        setLoading(false);
-      } catch (error) {
-        console.error();
-        setLoading(false);
-      }
-    };
-    onSyncFilteredGames();
-  }, [data.games, selectedFilter]);
+      const moreGames = await getGames(selectedFilter, currentPage + 1);
+      console.log({ moreGames });
+      allGames.current = [...allGames.current, ...moreGames.games];
+      setFilteredGames((p) => [...p, ...moreGames.games]);
+      setCurrentPage(moreGames.currentPage);
+      setLoadingMore(false);
+    } catch (error) {
+      console.error(error);
+      setLoadingMore(false);
+    }
+  };
+
+  const onChangeFilter = async (newFilter: string) => {
+    try {
+      setSelectedFilter(newFilter);
+      if (!newFilter) return setFilteredGames(allGames.current);
+
+      setLoadingFilter(true);
+      const newFilteredGames = await getGames(newFilter, currentPage);
+      setFilteredGames(newFilteredGames.games);
+      setLoadingFilter(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <div>
@@ -64,24 +80,24 @@ export const Games = ({ data }: GamesProps) => {
               label: capitalizeFirstLetter(c),
               value: c,
             }))}
-            fnChange={setSelectedFilter}
+            fnChange={onChangeFilter}
           />
         </div>
       </div>
       <div className="w-full p-6 flex flex-wrap gap-6 border-t-[1px] border-t-[#EFEDF3]">
-        {loading &&
+        {loadingFilter &&
           [1, 2, 3, 4].map((c) => (
             <div
               key={c}
               className="w-full h-[400px] rounded-2xl bg-neutral-400  animate-pulse"
             ></div>
           ))}
-        {!loading && filteredGames.length === 0 && (
+        {!loadingFilter && filteredGames.length === 0 && (
           <div>
             There are not games with the selected filter yet, try again later
           </div>
         )}
-        {!loading &&
+        {!loadingFilter &&
           filteredGames.map((c) => (
             <article
               key={c.id}
@@ -108,15 +124,20 @@ export const Games = ({ data }: GamesProps) => {
                   </div>
                 </div>
               </div>
-              <button
-                onClick={() => onAddToCart(c)}
-                className="p-5 w-full rounded font-bold border text-ad-gray-medium hover:bg-[#585660] hover:text-[#fff] hover:bg-"
-              >
-                ADD TO CART
-              </button>
+              <Button onClick={() => onAddToCart(c)}>ADD TO CART</Button>
             </article>
           ))}
       </div>
+      {currentPage < data.totalPages && (
+        <div className="p-6">
+          {loadingMore && <div className="text-center">Loading...</div>}
+          {!loadingMore && (
+            <Button onClick={onSeeMore} variant="solid" className="w-full">
+              SEE MORE
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 };
