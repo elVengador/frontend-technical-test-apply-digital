@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/Button";
 import { CloseIcon } from "@/components/icons/CloseIcon";
 import { LeftArrowIcon } from "@/components/icons/LeftArrowIcon";
 import { LOCAL_STORAGE_KEY_CART } from "@/constants";
@@ -25,15 +26,14 @@ export default function Cart() {
   }, [cart]);
 
   return (
-    <main className="">
-      <div className="px-6 py-4">
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-ad-gray-medium font-medium"
-        >
-          <LeftArrowIcon /> Back to Catalog
-        </Link>
-      </div>
+    <main className="px-6 py-4">
+      <Link
+        href="/"
+        className="mb-8 flex items-center gap-2 text-ad-gray-medium font-medium"
+      >
+        <LeftArrowIcon /> Back to Catalog
+      </Link>
+
       <div className="px-6 py-8 flex flex-col gap-8">
         <div>
           <h2 className="font-bold text-2xl">Your Cart</h2>
@@ -61,14 +61,49 @@ export default function Cart() {
                   <CloseIcon />
                 </button>
               </div>
-              <p className="mb-3 text-neutral-500 font-bold">{c.genre}</p>
-              <h3 className="mb-2 text-ad-gray-medium font-bold">{c.name}</h3>
+              <p className="mb-3 flex justify-between items-center text-neutral-500 font-bold">
+                {c.genre}
+              </p>
+              <h3 className="mb-2 text-ad-gray-medium font-bold">
+                {c.name}
+                {c.isNew && (
+                  <span className="ml-2 bg-blue-600 text-sm text-gray-100 p-1 rounded-lg">
+                    is new
+                  </span>
+                )}
+              </h3>
               <p className="mb-6 text-neutral-500">{c.description}</p>
               <p className="text-right text-lg">${c.price}</p>
             </article>
           ))}
         </div>
       </div>
+      <article className="px-4 py-6 mt-12 border border-ad-stoke-secondary rounded-2xl">
+        <h3 className="mb-3 font-bold text-xl">Order Summary</h3>
+        <p className="mb-[44px]">3 items</p>
+        <ul className="flex flex-col gap-3">
+          {cartData.map((c) => (
+            <li
+              key={c.id}
+              className="flex justify-between items-center text-lg"
+            >
+              <div>{c.name}</div>
+              <div>$ {c.price}</div>
+            </li>
+          ))}
+        </ul>
+        <hr className="my-6 border-b-[0.5px] border-b-ad-stoke-secondary" />
+        <div className="mb-5 flex justify-between items-center font-bold text-xl">
+          <div>Order Total</div>
+          <div>
+            $ {cartData.map((c) => c.price).reduce((a, c): number => a + c)}
+          </div>
+        </div>
+      </article>
+
+      <Button variant="solid" className="w-full mt-10">
+        Checkout
+      </Button>
     </main>
   );
 }
