@@ -70,7 +70,7 @@ export const Games = ({ data }: GamesProps) => {
   return (
     <div>
       <div className="px-6 py-8">
-        <h1>TOP SELLERS</h1>
+        <h1 className="bold text-2xl">TOP SELLERS</h1>
         <div className="flex justify-between items-center gap-6">
           <div className="font-bold text-[#3B3B3B]">Genre</div>
           <PipeIcon />
