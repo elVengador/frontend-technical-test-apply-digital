@@ -8,14 +8,31 @@ import { capitalizeFirstLetter } from "@/utils/string.utils";
 import { PipeIcon } from "./icons/PipeIcon";
 import { Select } from "./Select";
 import { getGames } from "@/repository/games.repository";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 type GamesProps = { data: GetGamesOutput };
 export const Games = ({ data }: GamesProps) => {
   const [selectedFilter, setSelectedFilter] = useState("");
   const [filteredGames, setFilteredGames] = useState<Game[]>(data.games);
   const [loading, setLoading] = useState(false);
+  const [_, setCart] = useLocalStorage({ key: "AD_CART", initialValue: "" });
 
-  console.log({ selectedFilter });
+  const onAddToCart = (game: Game) => {
+    try {
+      setCart((p) => {
+        if (!p) return JSON.stringify([game]);
+
+        const previousCart = JSON.parse(p) as Game[];
+        const existElement = previousCart.find((cur) => cur.id === game.id);
+        if (existElement) return p;
+
+        return JSON.stringify(Array.from(new Set([...previousCart, game])));
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     const onSyncFilteredGames = async () => {
       try {
@@ -91,7 +108,10 @@ export const Games = ({ data }: GamesProps) => {
                   </div>
                 </div>
               </div>
-              <button className="p-5 w-full rounded font-bold border text-ad-gray-medium hover:bg-[#585660] hover:text-[#fff] hover:bg-">
+              <button
+                onClick={() => onAddToCart(c)}
+                className="p-5 w-full rounded font-bold border text-ad-gray-medium hover:bg-[#585660] hover:text-[#fff] hover:bg-"
+              >
                 ADD TO CART
               </button>
             </article>
