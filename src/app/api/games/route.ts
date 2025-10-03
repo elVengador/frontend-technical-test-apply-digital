@@ -1,3 +1,4 @@
+import { GetGamesOutput } from "@/app/types";
 import { allGames, availableFilters, delay } from "@/utils/endpoint";
 
 const ITEMS_PER_PAGE = 12;
@@ -27,5 +28,7 @@ export async function GET(request: Request) {
   const totalPages = Math.ceil(allGames.length / ITEMS_PER_PAGE);
   const currentPage = page;
 
-  return Response.json({ games, availableFilters, totalPages, currentPage });
+  const response: GetGamesOutput = { games, availableFilters, totalPages, currentPage }
+
+  return Response.json(response);
 }
