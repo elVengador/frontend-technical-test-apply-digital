@@ -1,4 +1,4 @@
-import { GetGamesOutput } from "@/app/types";
+import { GetGamesOutput } from "@/types";
 import { allGames, availableFilters, delay } from "@/utils/endpoint";
 
 const ITEMS_PER_PAGE = 12;

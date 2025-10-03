@@ -1,6 +1,6 @@
 "use client";
 
-import { GetGamesOutput } from "@/app/types";
+import { GetGamesOutput } from "@/types";
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { Game } from "@/utils/endpoint";
@@ -10,6 +10,7 @@ import { Select } from "./Select";
 import { getGames } from "@/repository/games.repository";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Button } from "./Button";
+import { LOCAL_STORAGE_KEY_CART } from "@/constants";
 
 type GamesProps = { data: GetGamesOutput };
 export const Games = ({ data }: GamesProps) => {
@@ -17,7 +18,10 @@ export const Games = ({ data }: GamesProps) => {
   const [filteredGames, setFilteredGames] = useState<Game[]>(data.games);
   const [loadingFilter, setLoadingFilter] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [_, setCart] = useLocalStorage({ key: "AD_CART", initialValue: "" });
+  const [_, setCart] = useLocalStorage({
+    key: LOCAL_STORAGE_KEY_CART,
+    initialValue: "",
+  });
   const [currentPage, setCurrentPage] = useState(data.currentPage);
   const allGames = useRef<Game[]>(data.games);
 
@@ -68,7 +72,7 @@ export const Games = ({ data }: GamesProps) => {
   };
 
   return (
-    <div>
+    <main>
       <div className="px-6 py-8">
         <h1 className="bold text-2xl">TOP SELLERS</h1>
         <div className="flex justify-between items-center gap-6">
@@ -101,7 +105,7 @@ export const Games = ({ data }: GamesProps) => {
           filteredGames.map((c) => (
             <article
               key={c.id}
-              className="w-full p-6 flex flex-col gap-5 rounded-2xl border-[0.5px] border-[#8F8F8F]"
+              className="w-full p-6 flex flex-col gap-5 rounded-2xl border-[0.5px] border-ad-stoke-secondary"
             >
               <div className="relative h-[240px] rounded-t-6">
                 <Image
@@ -138,6 +142,6 @@ export const Games = ({ data }: GamesProps) => {
           )}
         </div>
       )}
-    </div>
+    </main>
   );
 };
