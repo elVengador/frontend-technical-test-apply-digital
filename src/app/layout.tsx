@@ -22,7 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${archivo.className}`}>
+      <body
+        className={`${archivo.className} grid grid-rows-[auto_1fr_auto] min-h-[100dvh]`}
+      >
         <Header />
         {children}
         <Footer />
