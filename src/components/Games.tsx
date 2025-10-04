@@ -11,31 +11,27 @@ import { getGames } from "@/repository/games.repository";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Button } from "./Button";
 import { LOCAL_STORAGE_KEY_CART } from "@/constants";
+import { deleteObjectProperty } from "@/utils/object.utils";
 
+type GamesMap = { [key: string]: Game };
 type GamesProps = { data: GetGamesOutput };
 export const Games = ({ data }: GamesProps) => {
   const [selectedFilter, setSelectedFilter] = useState("");
   const [filteredGames, setFilteredGames] = useState<Game[]>(data.games);
   const [loadingFilter, setLoadingFilter] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [_, setCart] = useLocalStorage({
+  const [cart, setCart] = useLocalStorage<GamesMap>({
     key: LOCAL_STORAGE_KEY_CART,
-    initialValue: "",
   });
+  console.log({ cart });
   const [currentPage, setCurrentPage] = useState(data.currentPage);
   const allGames = useRef<Game[]>(data.games);
 
-  const onAddToCart = (game: Game) => {
+  const onRemoveGameToCart = (id: string) => {
     try {
-      setCart((p) => {
-        if (!p) return JSON.stringify([game]);
-
-        const previousCart = JSON.parse(p) as Game[];
-        const existElement = previousCart.find((cur) => cur.id === game.id);
-        if (existElement) return p;
-
-        return JSON.stringify(Array.from(new Set([...previousCart, game])));
-      });
+      const hasConfirm = confirm("Are you sure you want to remove the game?");
+      if (!hasConfirm) return;
+      setCart((prev) => deleteObjectProperty(prev, id));
     } catch (error) {
       console.error(error);
     }
@@ -128,7 +124,16 @@ export const Games = ({ data }: GamesProps) => {
                   </div>
                 </div>
               </div>
-              <Button onClick={() => onAddToCart(c)}>ADD TO CART</Button>
+              {cart[c.id] && (
+                <Button onClick={() => onRemoveGameToCart(c.id)}>Remove</Button>
+              )}
+              {!cart[c.id] && (
+                <Button
+                  onClick={() => setCart((prev) => ({ ...prev, [c.id]: c }))}
+                >
+                  Add to cart
+                </Button>
+              )}
             </article>
           ))}
       </div>

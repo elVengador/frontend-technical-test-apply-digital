@@ -1,18 +1,19 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 
-type useLocalStorageProps = { key: string; initialValue?: string };
+type useLocalStorageProps<T> = { key: string; initialValue?: T };
 
-export const useLocalStorage = ({
+export const useLocalStorage = <T extends Record<string, any>>({
+  initialValue = {} as T,
   key,
-  initialValue = "",
-}: useLocalStorageProps): [string, Dispatch<SetStateAction<string>>] => {
-  const [storedValue, setStoredValue] = useState<string>(initialValue);
+}: useLocalStorageProps<T>): [T, Dispatch<SetStateAction<T>>] => {
+  const [storedValue, setStoredValue] = useState<T>(initialValue);
 
-  const setValue: Dispatch<SetStateAction<string>> = (props) => {
+  const setValue: Dispatch<SetStateAction<T>> = (props) => {
     try {
       setStoredValue((p) => {
-        const value = typeof props === "function" ? props(p) : props;
-        localStorage.setItem(key, value);
+        const value =
+          typeof props === "function" ? (props as Function)(p) : props;
+        localStorage.setItem(key, JSON.stringify(value));
         return value;
       });
     } catch (error) {
@@ -21,8 +22,13 @@ export const useLocalStorage = ({
   };
 
   useEffect(() => {
-    setStoredValue(localStorage.getItem(key) ?? initialValue);
-  }, [initialValue, key]);
+    try {
+      const item = localStorage.getItem(key);
+      if (item) setStoredValue(JSON.parse(item));
+    } catch (error) {
+      console.error(error);
+    }
+  }, [key]);
 
   return [storedValue, setValue];
 };

@@ -6,34 +6,30 @@ import { LeftArrowIcon } from "@/components/icons/LeftArrowIcon";
 import { LOCAL_STORAGE_KEY_CART } from "@/constants";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Game } from "@/utils/endpoint";
+import { deleteObjectProperty } from "@/utils/object.utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
 
 export default function Cart() {
-  const [cart, setCart] = useLocalStorage({
+  const [cart, setCart] = useLocalStorage<Record<string, Game>>({
     key: LOCAL_STORAGE_KEY_CART,
-    initialValue: "",
   });
 
   const cartData: Game[] = useMemo(() => {
     try {
-      if (!cart) return [];
-      return JSON.parse(cart);
+      return Object.values(cart);
     } catch (error) {
       console.error(error);
+      return [];
     }
   }, [cart]);
-
-  console.log({ cartData });
 
   const onRemoveGame = (id: string) => {
     try {
       const hasConfirm = confirm("Are you sure you want to remove the game?");
       if (!hasConfirm) return;
-
-      const updatedGames = cartData.filter((c) => c.id !== id);
-      setCart(JSON.stringify(updatedGames));
+      setCart((prev) => deleteObjectProperty(prev, id));
     } catch (error) {
       console.error(error);
     }
