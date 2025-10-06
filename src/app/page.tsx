@@ -1,12 +1,15 @@
 import { Games } from "@/components/Games";
 import { getGames } from "@/repository/games.repository";
 
-export default async function Home() {
-  const data = await getGames();
+type HomeProps = { searchParams: { genre?: string } };
+
+export default async function Home({ searchParams }: HomeProps) {
+  const genre = searchParams.genre || "";
+  const data = await getGames(genre);
 
   return (
     <main className="">
-      <Games data={data} />
+      <Games data={data} genre={genre} />
     </main>
   );
 }

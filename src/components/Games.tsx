@@ -1,7 +1,7 @@
 "use client";
 
 import { GetGamesOutput } from "@/types";
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Game } from "@/utils/endpoint";
 import { capitalizeFirstLetter } from "@/utils/string.utils";
@@ -12,20 +12,32 @@ import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Button } from "./Button";
 import { LOCAL_STORAGE_KEY_CART } from "@/constants";
 import { deleteObjectProperty } from "@/utils/object.utils";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 type GamesMap = { [key: string]: Game };
-type GamesProps = { data: GetGamesOutput };
-export const Games = ({ data }: GamesProps) => {
-  const [selectedFilter, setSelectedFilter] = useState("");
-  const [filteredGames, setFilteredGames] = useState<Game[]>(data.games);
-  const [loadingFilter, setLoadingFilter] = useState(false);
+type GamesProps = { data: GetGamesOutput; genre: string };
+export const Games = ({ data, genre }: GamesProps) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [cart, setCart] = useLocalStorage<GamesMap>({
     key: LOCAL_STORAGE_KEY_CART,
   });
-  console.log({ cart });
   const [currentPage, setCurrentPage] = useState(data.currentPage);
-  const allGames = useRef<Game[]>(data.games);
+  const [allGames, setAllGames] = useState<Game[]>(data.games);
+
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const onChangeFilter = (genre: string) => {
+    try {
+      console.log({ genre });
+      const params = new URLSearchParams(searchParams.toString());
+      genre ? params.set("genre", genre) : params.delete("genre");
+      router.push(`${pathname}?${params.toString()}`);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const onRemoveGameToCart = (id: string) => {
     try {
@@ -41,10 +53,9 @@ export const Games = ({ data }: GamesProps) => {
     try {
       setLoadingMore(true);
 
-      const moreGames = await getGames(selectedFilter, currentPage + 1);
+      const moreGames = await getGames(genre, currentPage + 1);
       console.log({ moreGames });
-      allGames.current = [...allGames.current, ...moreGames.games];
-      setFilteredGames((p) => [...p, ...moreGames.games]);
+      setAllGames((prev) => [...prev, ...moreGames.games]);
       setCurrentPage(moreGames.currentPage);
       setLoadingMore(false);
     } catch (error) {
@@ -53,19 +64,11 @@ export const Games = ({ data }: GamesProps) => {
     }
   };
 
-  const onChangeFilter = async (newFilter: string) => {
-    try {
-      setSelectedFilter(newFilter);
-      if (!newFilter) return setFilteredGames(allGames.current);
-
-      setLoadingFilter(true);
-      const newFilteredGames = await getGames(newFilter, currentPage);
-      setFilteredGames(newFilteredGames.games);
-      setLoadingFilter(false);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  useEffect(() => {
+    console.log({ data });
+    setAllGames(data.games);
+    setCurrentPage(data.currentPage);
+  }, [data]);
 
   return (
     <main>
@@ -75,7 +78,7 @@ export const Games = ({ data }: GamesProps) => {
           <div className="font-bold text-[#3B3B3B]">Genre</div>
           <PipeIcon />
           <Select
-            label={selectedFilter}
+            label={genre ?? "All"}
             options={data.availableFilters.map((c) => ({
               label: capitalizeFirstLetter(c),
               value: c,
@@ -85,57 +88,49 @@ export const Games = ({ data }: GamesProps) => {
         </div>
       </div>
       <div className="w-full p-6 flex flex-wrap gap-6 border-t-[1px] border-t-[#EFEDF3]">
-        {loadingFilter &&
-          [1, 2, 3, 4].map((c) => (
-            <div
-              key={c}
-              className="w-full h-[400px] rounded-2xl bg-neutral-400  animate-pulse"
-            ></div>
-          ))}
-        {!loadingFilter && filteredGames.length === 0 && (
+        {allGames.length === 0 && (
           <div>
             There are not games with the selected filter yet, try again later
           </div>
         )}
-        {!loadingFilter &&
-          filteredGames.map((c) => (
-            <article
-              key={c.id}
-              className="w-full p-6 flex flex-col gap-5 rounded-2xl border-[0.5px] border-ad-stoke-secondary"
-            >
-              <div className="relative h-[240px] rounded-t-6">
-                <Image
-                  src={c.image}
-                  alt={c.description}
-                  className="rounded-t-3xl"
-                  fill
-                />
+        {allGames.map((cur) => (
+          <article
+            key={cur.id}
+            className="w-full p-6 flex flex-col gap-5 rounded-2xl border-[0.5px] border-ad-stoke-secondary"
+          >
+            <div className="relative h-[240px] rounded-t-6">
+              <Image
+                src={cur.image}
+                alt={cur.description}
+                className="rounded-t-3xl"
+                fill
+              />
+            </div>
+            <div className="flex flex-col gap-3">
+              <div className="text-[#737373] font-bold text-base">
+                {cur.genre}
               </div>
-              <div className="flex flex-col gap-3">
-                <div className="text-[#737373] font-bold text-base">
-                  {c.genre}
-                </div>
-                <div className="flex justify-between">
-                  <h2 className="font-bold text-lg text-ad-gray-medium">
-                    {c.name}
-                  </h2>
-                  <div className="font-bold text-xl text-ad-gray-medium">
-                    ${c.price}
-                  </div>
+              <div className="flex justify-between">
+                <h2 className="font-bold text-lg text-ad-gray-medium">
+                  {cur.name}
+                </h2>
+                <div className="font-bold text-xl text-ad-gray-medium">
+                  ${cur.price}
                 </div>
               </div>
-              {cart[c.id] && (
-                <Button onClick={() => onRemoveGameToCart(c.id)}>Remove</Button>
-              )}
-              {!cart[c.id] && (
-                <Button
-                  onClick={() => setCart((prev) => ({ ...prev, [c.id]: c }))}
-                >
-                  Add to cart
-                </Button>
-              )}
-            </article>
-          ))}
+            </div>
+            {cart[cur.id] && (
+              <Button onClick={() => onRemoveGameToCart(cur.id)}>Remove</Button>
+            )}
+            {!cart[cur.id] && (
+              <Button
+                onClick={() => setCart((prev) => ({ ...prev, [cur.id]: cur }))}
+              >
+                Add to cart
+              </Button>
+            )}
+          </article>
+        ))}
       </div>
       {currentPage < data.totalPages && (
         <div className="p-6">
