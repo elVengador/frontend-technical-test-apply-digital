@@ -23,7 +23,6 @@ export const Games = ({ data, genre }: GamesProps) => {
   });
   const [currentPage, setCurrentPage] = useState(data.currentPage);
   const [allGames, setAllGames] = useState<Game[]>(data.games);
-
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -55,7 +54,6 @@ export const Games = ({ data, genre }: GamesProps) => {
       setLoadingMore(true);
 
       const moreGames = await getGames(genre, currentPage + 1);
-      console.log({ moreGames });
       setAllGames((prev) => [...prev, ...moreGames.games]);
       setCurrentPage(moreGames.currentPage);
       setLoadingMore(false);
@@ -66,7 +64,6 @@ export const Games = ({ data, genre }: GamesProps) => {
   };
 
   useEffect(() => {
-    console.log({ data });
     setAllGames(data.games);
     setCurrentPage(data.currentPage);
   }, [data]);
