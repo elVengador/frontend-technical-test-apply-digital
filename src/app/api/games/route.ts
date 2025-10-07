@@ -9,8 +9,9 @@ export async function GET(request: Request) {
   let page = parseInt(searchParams.get("page") ?? "1");
 
   let games = allGames;
+  let gamesFiltered = games
   if (genre) {
-    games = games.filter(
+    gamesFiltered = games.filter(
       (game) => game.genre.toLowerCase() === genre.toLowerCase()
     );
   }
@@ -22,12 +23,12 @@ export async function GET(request: Request) {
 
   const fromIndex = (page - 1) * ITEMS_PER_PAGE;
   const toIndex = page * ITEMS_PER_PAGE;
-  games = games.slice(fromIndex, toIndex);
+  const gamesPerPage = games.slice(fromIndex, toIndex);
 
-  const totalPages = Math.ceil(games.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(gamesFiltered.length / ITEMS_PER_PAGE);
   const currentPage = page;
 
-  const response: GetGamesOutput = { games, availableFilters, totalPages, currentPage }
+  const response: GetGamesOutput = { games: gamesPerPage, availableFilters, totalPages, currentPage }
 
   return Response.json(response);
 }
