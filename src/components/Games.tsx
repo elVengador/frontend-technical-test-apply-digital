@@ -34,6 +34,7 @@ export const Games = ({ data, genre }: GamesProps) => {
       const params = new URLSearchParams(searchParams.toString());
       genre ? params.set("genre", genre) : params.delete("genre");
       router.push(`${pathname}?${params.toString()}`);
+      if (!genre) router.refresh();
     } catch (error) {
       console.error(error);
     }
