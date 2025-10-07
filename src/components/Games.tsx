@@ -13,11 +13,13 @@ import { Button } from "./Button";
 import { LOCAL_STORAGE_KEY_CART } from "@/constants";
 import { deleteObjectProperty } from "@/utils/object.utils";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Card } from "./Card";
 
 type GamesMap = { [key: string]: Game };
 type GamesProps = { data: GetGamesOutput; genre: string };
 export const Games = ({ data, genre }: GamesProps) => {
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [cart, setCart] = useLocalStorage<GamesMap>({
     key: LOCAL_STORAGE_KEY_CART,
   });
@@ -33,6 +35,8 @@ export const Games = ({ data, genre }: GamesProps) => {
       genre ? params.set("genre", genre) : params.delete("genre");
       router.push(`${pathname}?${params.toString()}`);
       if (!genre) router.refresh();
+      setAllGames([]);
+      setLoading(true);
     } catch (error) {
       console.error(error);
     }
@@ -65,6 +69,7 @@ export const Games = ({ data, genre }: GamesProps) => {
   useEffect(() => {
     setAllGames(data.games);
     setCurrentPage(data.currentPage);
+    setLoading(false);
   }, [data]);
 
   return (
@@ -88,52 +93,63 @@ export const Games = ({ data, genre }: GamesProps) => {
         </div>
       </div>
       <div className="w-full max-w-[1236px] p-6 mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {allGames.length === 0 && (
+        {loading &&
+          [1, 2, 3, 4, 5, 6].map((cur) => (
+            <Card key={cur}>
+              <div className="animate-pulse h-[240px] rounded-t-3xl bg-neutral-300"></div>
+              <div className="animate-pulse w-full h-4 bg-neutral-300"></div>
+              <div className="animate-pulse w-full h-4 bg-neutral-300"></div>
+              <div className="animate-pulse w-full h-12 bg-neutral-300"></div>
+            </Card>
+          ))}
+        {!loading && allGames.length === 0 && (
           <div>
             There are not games with the selected filter yet, try again later
           </div>
         )}
-        {allGames.map((cur) => (
-          <article
-            key={cur.id}
-            className="w-full p-6 flex flex-col gap-5 rounded-2xl border-[0.5px] border-ad-stoke-secondary"
-          >
-            <div className="relative h-[240px] rounded-t-6">
-              <Image
-                src={cur.image}
-                alt={cur.description}
-                className="object-cover rounded-t-3xl"
-                fill
-                sizes="300px"
-              />
-            </div>
-            <div className="flex flex-col gap-3">
-              <div className="text-[#737373] font-bold text-base">
-                {cur.genre}
+        {!loading &&
+          allGames.map((cur) => (
+            <Card key={cur.id}>
+              <div className="relative h-[240px]">
+                <Image
+                  src={cur.image}
+                  alt={cur.description}
+                  className="object-cover rounded-t-3xl"
+                  fill
+                  sizes="300px"
+                />
               </div>
-              <div className="flex justify-between gap-4">
-                <h2 className="font-bold text-lg text-ad-gray-medium">
-                  {cur.name}
-                </h2>
-                <div className="font-bold text-xl text-ad-gray-medium">
-                  ${cur.price}
+              <div className="flex flex-col gap-3">
+                <div className="text-[#737373] font-bold text-base">
+                  {cur.genre}
+                </div>
+                <div className="flex justify-between gap-4">
+                  <h2 className="font-bold text-lg text-ad-gray-medium">
+                    {cur.name}
+                  </h2>
+                  <div className="font-bold text-xl text-ad-gray-medium">
+                    ${cur.price}
+                  </div>
                 </div>
               </div>
-            </div>
-            {cart[cur.id] && (
-              <Button onClick={() => onRemoveGameToCart(cur.id)}>Remove</Button>
-            )}
-            {!cart[cur.id] && (
-              <Button
-                onClick={() => setCart((prev) => ({ ...prev, [cur.id]: cur }))}
-              >
-                Add to cart
-              </Button>
-            )}
-          </article>
-        ))}
+              {cart[cur.id] && (
+                <Button onClick={() => onRemoveGameToCart(cur.id)}>
+                  Remove
+                </Button>
+              )}
+              {!cart[cur.id] && (
+                <Button
+                  onClick={() =>
+                    setCart((prev) => ({ ...prev, [cur.id]: cur }))
+                  }
+                >
+                  Add to cart
+                </Button>
+              )}
+            </Card>
+          ))}
       </div>
-      {currentPage < data.totalPages && (
+      {!loading && currentPage < data.totalPages && (
         <div className="w-full max-w-[1236px] p-6 mx-auto md:flex md:justify-center">
           {loadingMore && <div className="text-center">Loading...</div>}
           {!loadingMore && (
