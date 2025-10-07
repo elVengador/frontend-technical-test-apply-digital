@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import { DownArrowIcon } from "./icons/DownArrowIcon";
+import { twMerge } from "tailwind-merge";
 
 type SelectProps = {
   label: string;
   options: { label: string; value: string }[];
   fnChange: (newValue: string) => void;
+  classes?: string;
 };
 
-export const Select = ({ label, options, fnChange }: SelectProps) => {
+export const Select = ({ label, options, fnChange, classes }: SelectProps) => {
   const [displayMenu, setDisplayMenu] = useState(false);
 
   const onChange = (newValue: string) => {
@@ -20,7 +22,7 @@ export const Select = ({ label, options, fnChange }: SelectProps) => {
   };
 
   return (
-    <div className="relative w-full">
+    <div className={twMerge("relative w-full", classes)}>
       <button
         onClick={() => setDisplayMenu((p) => !p)}
         className="w-full px-[0px] py-4 flex justify-between items-center text-ad-gray-medium hover:bg-neutral-200"

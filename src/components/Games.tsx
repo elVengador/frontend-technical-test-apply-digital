@@ -72,22 +72,25 @@ export const Games = ({ data, genre }: GamesProps) => {
 
   return (
     <main>
-      <div className="px-6 py-8">
-        <h1 className="bold text-2xl">TOP SELLERS</h1>
-        <div className="flex justify-between items-center gap-6">
-          <div className="font-bold text-[#3B3B3B]">Genre</div>
-          <PipeIcon />
-          <Select
-            label={genre ?? "All"}
-            options={data.availableFilters.map((c) => ({
-              label: capitalizeFirstLetter(c),
-              value: c,
-            }))}
-            fnChange={onChangeFilter}
-          />
+      <div className="border-b-[1px] border-b-[#EFEDF3]">
+        <div className="w-full max-w-[1236px] mx-auto px-6 py-8">
+          <h1 className="bold text-2xl">TOP SELLERS</h1>
+          <div className="flex justify-between md:justify-end items-center gap-6">
+            <div className="font-bold text-[#3B3B3B]">Genre</div>
+            <PipeIcon />
+            <Select
+              label={genre ?? "All"}
+              options={data.availableFilters.map((c) => ({
+                label: capitalizeFirstLetter(c),
+                value: c,
+              }))}
+              fnChange={onChangeFilter}
+              classes="md:w-[205px]"
+            />
+          </div>
         </div>
       </div>
-      <div className="w-full p-6 flex flex-wrap gap-6 border-t-[1px] border-t-[#EFEDF3]">
+      <div className="w-full max-w-[1236px] p-6 mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {allGames.length === 0 && (
           <div>
             There are not games with the selected filter yet, try again later
@@ -102,15 +105,16 @@ export const Games = ({ data, genre }: GamesProps) => {
               <Image
                 src={cur.image}
                 alt={cur.description}
-                className="rounded-t-3xl"
+                className="object-cover rounded-t-3xl"
                 fill
+                sizes="300px"
               />
             </div>
             <div className="flex flex-col gap-3">
               <div className="text-[#737373] font-bold text-base">
                 {cur.genre}
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-4">
                 <h2 className="font-bold text-lg text-ad-gray-medium">
                   {cur.name}
                 </h2>
@@ -133,10 +137,14 @@ export const Games = ({ data, genre }: GamesProps) => {
         ))}
       </div>
       {currentPage < data.totalPages && (
-        <div className="p-6">
+        <div className="w-full max-w-[1236px] p-6 mx-auto md:flex md:justify-center">
           {loadingMore && <div className="text-center">Loading...</div>}
           {!loadingMore && (
-            <Button onClick={onSeeMore} variant="solid" className="w-full">
+            <Button
+              onClick={onSeeMore}
+              variant="solid"
+              className="w-full md:w-auto"
+            >
               SEE MORE
             </Button>
           )}
