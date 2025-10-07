@@ -1,5 +1,5 @@
 import { Games } from "@/components/Games";
-import { getGames } from "@/repository/games.repository";
+import { getGames } from "@/services/games.services";
 
 type HomeProps = { searchParams: { genre?: string } };
 

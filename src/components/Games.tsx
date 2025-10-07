@@ -7,7 +7,7 @@ import { Game } from "@/utils/endpoint";
 import { capitalizeFirstLetter } from "@/utils/string.utils";
 import { PipeIcon } from "./icons/PipeIcon";
 import { Select } from "./Select";
-import { getGames } from "@/repository/games.repository";
+import { getGames } from "@/services/games.services";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Button } from "./Button";
 import { LOCAL_STORAGE_KEY_CART } from "@/constants";
@@ -29,7 +29,6 @@ export const Games = ({ data, genre }: GamesProps) => {
 
   const onChangeFilter = (genre: string) => {
     try {
-      console.log({ genre });
       const params = new URLSearchParams(searchParams.toString());
       genre ? params.set("genre", genre) : params.delete("genre");
       router.push(`${pathname}?${params.toString()}`);
