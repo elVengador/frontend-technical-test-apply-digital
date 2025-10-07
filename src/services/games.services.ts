@@ -6,7 +6,9 @@ export const API_URI = isProd
     : 'http://localhost:3000/api';
 
 export const getGames = async (genre: string = '', page: number = 1): Promise<GetGamesOutput> => {
-    const res = await fetch(`${API_URI}/games?genre=${genre}&page=${page}`);
+    const fullUrl = `${API_URI}/games?genre=${genre}&page=${page}`
+    console.log("👉", fullUrl)
+    const res = await fetch(fullUrl);
     const data = res.json();
     return data;
 };
