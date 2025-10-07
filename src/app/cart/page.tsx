@@ -5,6 +5,7 @@ import { CloseIcon } from "@/components/icons/CloseIcon";
 import { LeftArrowIcon } from "@/components/icons/LeftArrowIcon";
 import { LOCAL_STORAGE_KEY_CART } from "@/constants";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { getTotalPrice } from "@/utils/cart.utils";
 import { Game } from "@/utils/endpoint";
 import { deleteObjectProperty } from "@/utils/object.utils";
 import Image from "next/image";
@@ -117,13 +118,7 @@ export default function Cart() {
               <hr className="my-6 border-b-[0.5px] border-b-ad-stoke-secondary" />
               <div className="mb-5 flex justify-between items-center font-bold text-xl">
                 <div>Order Total</div>
-                <div>
-                  ${" "}
-                  {cartData
-                    .map((c) => c.price)
-                    .reduce((a, c): number => a + c, 0)
-                    .toFixed(2)}
-                </div>
+                <div>$ {getTotalPrice(cartData)}</div>
               </div>
             </article>
             <Button variant="solid" className="w-full mt-10 md:mt-8">
